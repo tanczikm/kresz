@@ -219,7 +219,7 @@
 								React.createElement("br", null), React.createElement("br", null), 
 								"A kérdésadatbázis a szakoe.hu oldalról származik, annak szerzői jogaival a E-Educatio Információtechnológia Zrt. rendelkezik.", 
 								React.createElement("br", null), React.createElement("br", null), 
-								"E-mail: ujkreszteszt (a) gmail.com"
+								React.createElement("strong", null, "A program sütikben menti el a statisztikákat, a sütik törlésével a statisztikák törölhetők."),
 							)
 						)
 					), 
@@ -293,6 +293,7 @@
 						React.createElement("div", {className: "card-content"}, 
 							React.createElement("span", {className: "card-title grey-text text-darken-4"}, React.createElement("h4", null, "Visszajelzés")), 
 							React.createElement("p", null, "Minden visszajelzést szívesen várok a ", React.createElement("strong", null, "ujkreszteszt (a) gmail.com"), " címen. Ha kérdésed, javaslatod vagy ötleted van, esetleg hibát találtál, írj hogy minél jobb lehessen a program. Ha tetszett az alkalmazás, oszd meg másokkal is.")
+							
 						)
 					)
 				)
