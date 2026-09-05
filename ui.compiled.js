@@ -130,25 +130,96 @@
 	};
 
 	var App = React.createClass({displayName: 'App',
+		getInitialState: function() {
+			var el = document.documentElement;
+			return {
+				isFullscreen: false,
+				fullscreenSupported: !!(el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen)
+			};
+		},
 		componentDidMount: function() {
 			$(React.findDOMNode(this)).find('.button-collapse').sideNav();
+			var self = this;
+			var syncFullscreen = function() {
+				var active = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+				self.setState({isFullscreen: !!active});
+			};
+			document.addEventListener('fullscreenchange', syncFullscreen);
+			document.addEventListener('webkitfullscreenchange', syncFullscreen);
+			document.addEventListener('MSFullscreenChange', syncFullscreen);
+			this._syncFullscreen = syncFullscreen;
+		},
+		componentWillUnmount: function() {
+			if (this._syncFullscreen) {
+				document.removeEventListener('fullscreenchange', this._syncFullscreen);
+				document.removeEventListener('webkitfullscreenchange', this._syncFullscreen);
+				document.removeEventListener('MSFullscreenChange', this._syncFullscreen);
+			}
+		},
+		toggleFullscreen: function(event) {
+			if (event && event.preventDefault) {
+				event.preventDefault();
+			}
+			var $collapse = $(React.findDOMNode(this)).find('.button-collapse');
+			if ($collapse.length) {
+				$collapse.sideNav('hide');
+			}
+			var docEl = document.documentElement;
+			var active = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+			if (active) {
+				if (document.exitFullscreen) {
+					document.exitFullscreen();
+				} else if (document.webkitExitFullscreen) {
+					document.webkitExitFullscreen();
+				} else if (document.msExitFullscreen) {
+					document.msExitFullscreen();
+				}
+			} else if (docEl.requestFullscreen) {
+				docEl.requestFullscreen();
+			} else if (docEl.webkitRequestFullscreen) {
+				docEl.webkitRequestFullscreen();
+			} else if (docEl.msRequestFullscreen) {
+				docEl.msRequestFullscreen();
+			}
 		},
 		render: function() {
+			var fullscreenBtn = this.state.fullscreenSupported ? (
+				React.createElement("a", {
+					href: "#",
+					className: "fullscreen-toggle right",
+					onClick: this.toggleFullscreen,
+					title: this.state.isFullscreen ? "Kilépés a teljes képernyőből" : "Teljes képernyő",
+					'aria-label': this.state.isFullscreen ? "Kilépés a teljes képernyőből" : "Teljes képernyő"
+				}, React.createElement("i", {className: "material-icons"}, this.state.isFullscreen ? "fullscreen_exit" : "fullscreen"))
+			) : null;
+
+			var sideFullscreen = this.state.fullscreenSupported ? (
+				React.createElement("li", {className: "fullscreen-side-item"}, 
+					React.createElement("a", {href: "#", onClick: this.toggleFullscreen}, 
+						React.createElement("i", {className: "material-icons"}, this.state.isFullscreen ? "fullscreen_exit" : "fullscreen"), 
+						this.state.isFullscreen ? "Kilépés a teljes képernyőből" : "Teljes képernyő"
+					)
+				)
+			) : null;
+
 			return (
-				React.createElement("div", null, 
-					React.createElement("nav", {className: "teal lighten-1", role: "navigation"}, 
-						React.createElement("div", {className: "nav-wrapper container"}, React.createElement("a", {id: "logo-container", href: "#", className: "brand-logo"}, "KRESZ teszt"), 
+				React.createElement("div", {className: "app-root" + (this.state.isFullscreen ? " is-fullscreen" : "")}, 
+					React.createElement("nav", {className: "teal lighten-1 app-nav", role: "navigation"}, 
+						React.createElement("div", {className: "nav-wrapper container"}, 
+							React.createElement("a", {href: "#", 'data-activates': "nav-mobile", className: "button-collapse"}, React.createElement("i", {className: "material-icons"}, "menu")), 
+							React.createElement("a", {id: "logo-container", href: "#", className: "brand-logo"}, "KRESZ teszt"), 
+							fullscreenBtn, 
 							React.createElement("ul", {className: "right hide-on-med-and-down"}, 
-								React.createElement("li", null, React.createElement("a", {href: "#"}, "Új teszt")), 
-								React.createElement("li", null, React.createElement("a", {href: "#info"}, "Infó")), 
-								React.createElement("li", null, React.createElement("a", {href: "#statistics"}, "Statisztika"))
+								React.createElement("li", null, React.createElement("a", {href: "#"}, React.createElement("i", {className: "material-icons left"}, "assignment"), "Új teszt")), 
+								React.createElement("li", null, React.createElement("a", {href: "#info"}, React.createElement("i", {className: "material-icons left"}, "info"), "Infó")), 
+								React.createElement("li", null, React.createElement("a", {href: "#statistics"}, React.createElement("i", {className: "material-icons left"}, "bar_chart"), "Statisztika"))
 							), 
 							React.createElement("ul", {id: "nav-mobile", className: "side-nav"}, 
-								React.createElement("li", null, React.createElement("a", {href: "#"}, "Új teszt")), 
-								React.createElement("li", null, React.createElement("a", {href: "#info"}, "Infó")), 
-								React.createElement("li", null, React.createElement("a", {href: "#statistics"}, "Statisztika"))
-							), 
-							React.createElement("a", {href: "#", 'data-activates': "nav-mobile", className: "button-collapse"}, React.createElement("i", {className: "mdi-navigation-menu"}))
+								React.createElement("li", null, React.createElement("a", {href: "#"}, React.createElement("i", {className: "material-icons"}, "assignment"), "Új teszt")), 
+								React.createElement("li", null, React.createElement("a", {href: "#info"}, React.createElement("i", {className: "material-icons"}, "info"), "Infó")), 
+								React.createElement("li", null, React.createElement("a", {href: "#statistics"}, React.createElement("i", {className: "material-icons"}, "bar_chart"), "Statisztika")), 
+								sideFullscreen
+							)
 						)
 					), 
 
@@ -198,8 +269,7 @@
 				}, 2000);
 			}
 		},
-		onThemeChange: function(event) {
-			var pref = event.target.value;
+		onThemeChange: function(pref) {
 			theme.setPreference(pref);
 			this.setState({themePref: pref});
 		},
@@ -219,57 +289,63 @@
 			});
 
 			var themeOptions = [
-				{value: 'system', label: 'Rendszertéma'},
-				{value: 'light', label: 'Világos'},
-				{value: 'dark', label: 'Sötét'}
+				{value: 'system', label: 'Rendszertéma', icon: 'brightness_auto'},
+				{value: 'light', label: 'Világos', icon: 'light_mode'},
+				{value: 'dark', label: 'Sötét', icon: 'dark_mode'}
 			];
-			var themeRadios = themeOptions.map(function(option) {
-				var id = 'theme-radio-' + option.value;
+			var themeButtons = themeOptions.map(function(option) {
 				return (
-					React.createElement("p", {className: "radio-inline", key: option.value}, 
-						React.createElement("input", {
-							type: "radio",
-							name: "theme",
-							value: option.value,
-							id: id,
-							checked: self.state.themePref === option.value,
-							onChange: self.onThemeChange
-						}), 
-						React.createElement("label", {htmlFor: id}, option.label)
+					React.createElement("button", {
+						type: "button",
+						key: option.value,
+						className: "theme-option" + (self.state.themePref === option.value ? " is-active" : ""),
+						onClick: self.onThemeChange.bind(self, option.value),
+						'aria-pressed': self.state.themePref === option.value
+					}, 
+						React.createElement("i", {className: "material-icons"}, option.icon), 
+						option.label
 					)
 				);
 			});
 
 			return (
-				React.createElement("div", null, 
-					React.createElement("div", {className: "card"}, 
-						React.createElement("div", {className: "card-content"}, 
-							React.createElement("span", {className: "card-title grey-text text-darken-4"}, React.createElement("h4", null, "KRESZ teszt")), 
-							React.createElement("p", null, 
-								"Üdv a KRESZ teszt alkalmazásban! Itt felkészülhetsz a KRESZ vizsgádra a megújult 2015-ös vizsga valós kérdéseivel." + ' ' +
-								"További információ a tesztről, a kérdésekről és az alkalmazásról az ", React.createElement("a", {href: "#info"}, React.createElement("strong", null, "Infó")), " oldalon.", 
-								React.createElement("br", null), React.createElement("br", null), 
-								"A kérdésadatbázis a szakoe.hu oldalról származik, annak szerzői jogaival a E-Educatio Információtechnológia Zrt. rendelkezik.", 
-								React.createElement("br", null), React.createElement("br", null), 
-								React.createElement("strong", null, "A program sütikben menti el a statisztikákat, a sütik törlésével a statisztikák törölhetők."),
-							)
-						)
-					), 
-
-					React.createElement("div", {className: "card"}, 
-						React.createElement("div", {className: "card-content"}, 
-							React.createElement("span", {className: "card-title grey-text text-darken-4"}, "Téma"), 
-							React.createElement("div", {className: "radio-container theme-selector"}, themeRadios)
+				React.createElement("div", {className: "welcome-page"}, 
+					React.createElement("section", {className: "welcome-hero"}, 
+						React.createElement("h1", {className: "welcome-brand"}, 
+							React.createElement("i", {className: "material-icons"}, "directions_car"), 
+							"KRESZ teszt"
+						), 
+						React.createElement("p", {className: "welcome-lead"}, 
+							"Üdv! Itt felkészülhetsz a KRESZ vizsgádra a megújult vizsga valós kérdéseivel. További\u00a0részletek az ", 
+							React.createElement("a", {href: "#info"}, React.createElement("strong", null, "Infó")), 
+							" oldalon."
+						), 
+						React.createElement("p", {className: "welcome-meta"}, 
+							"A kérdésadatbázis a szakoe.hu oldalról származik, szerzői jogaival a E-Educatio Információtechnológia Zrt. rendelkezik.", 
+							React.createElement("br", null), 
+							React.createElement("strong", null, "A program sütikben menti el a statisztikákat; a sütik törlésével a statisztikák törölhetők.")
+						), 
+						React.createElement("div", {className: "theme-panel"}, 
+							React.createElement("span", {className: "theme-panel-label"}, "Téma"), 
+							React.createElement("div", {className: "theme-selector", role: "group", 'aria-label': "Témaválasztó"}, themeButtons)
 						)
 					), 
 
 					React.createElement("div", {className: "collection with-header card"}, 
-						React.createElement("div", {className: "collection-header"}, React.createElement("strong", null, "Teszt indítása – Válassz kategóriát!")), 
+						React.createElement("div", {className: "collection-header"}, 
+							React.createElement("i", {className: "material-icons"}, "play_circle"), 
+							React.createElement("strong", null, "Teszt indítása – Válassz kategóriát!")
+						), 
 						categoriesHtml
 					), 
 
 					React.createElement("div", {className: "collection with-header card"}, 
-						React.createElement("div", {className: "collection-header"}, React.createElement("strong", null, "Kérdésbank böngészése"), React.createElement("br", null), "Böngészd az egyes kategóriák teljes kérdésbankját (az összes kérdést)."), 
+						React.createElement("div", {className: "collection-header"}, 
+							React.createElement("i", {className: "material-icons"}, "menu_book"), 
+							React.createElement("strong", null, "Kérdésbank böngészése"), 
+							React.createElement("br", null), 
+							"Böngészd az egyes kategóriák teljes kérdésbankját (az összes kérdést)."
+						), 
 						categoryTestsHtml
 					)
 				)
@@ -544,7 +620,15 @@
 				startTime: new Date()
 			};
 		},
-		nextQuestion: function() {
+		onAnswerChange: function() {
+			this.forceUpdate();
+		},
+		nextQuestion: function(force) {
+			var question = this.props.test.questions[this.state.qNum];
+			if (!force && (!question || question.selected === null)) {
+				return;
+			}
+
 			if (this.state.qNum + 1 >= this.props.test.getQuestionCount()) {
 				return this.finishTest();
 			}
@@ -559,24 +643,35 @@
 		render: function() {
 			var self = this;
 			var question = this.props.test.questions[this.state.qNum];
+			var hasAnswer = question && question.selected !== null;
 
 			var questionHtml = !this.props.settings.onepage ?
-				(React.createElement(Question, {question: question, settings: this.props.settings, nextQuestionCallback: this.nextQuestion, type: "test"})) :
+				(React.createElement(Question, {question: question, settings: this.props.settings, nextQuestionCallback: this.nextQuestion, onAnswerChange: this.onAnswerChange, type: "test"})) :
 				$.map(this.props.test.questions, function(question) {
 					return React.createElement(Question, {question: question, settings: self.props.settings, nextQuestionCallback: $.noop, type: "test", key: question.id})
 				});
 
+			var nextBtnClass = "waves-effect waves-light btn" + (hasAnswer ? "" : " disabled");
 			var buttonsHtml = this.props.settings.onepage ?
-				React.createElement("a", {className: "waves-effect waves-light btn", title: "Mutasd az eredményt!", onClick: this.finishTest}, "Teszt befejezése") :
-				React.createElement("div", {className: "row"}, 
-					React.createElement("div", {className: "col m4 s12"}, React.createElement("a", {className: "waves-effect waves-light btn", onClick: this.nextQuestion}, "Következő kérdés")), 
+				React.createElement("a", {className: "waves-effect waves-light btn", title: "Mutasd az eredményt!", onClick: this.finishTest}, 
+					React.createElement("i", {className: "material-icons left"}, "done"), "Teszt befejezése"
+				) :
+				React.createElement("div", {className: "row test-actions"}, 
+					React.createElement("div", {className: "col m4 s12"}, React.createElement("a", {
+						className: nextBtnClass,
+						onClick: hasAnswer ? this.nextQuestion : null,
+						title: hasAnswer ? "" : "Előbb válassz egy választ!",
+						'aria-disabled': !hasAnswer
+					}, React.createElement("i", {className: "material-icons left"}, "navigate_next"), "Következő kérdés")), 
 					React.createElement("div", {className: "test-progress-question-count col m4 s12"}, this.state.qNum + 1, " / ", this.props.test.getQuestionCount()), 
-					React.createElement("div", {className: "col m4 s12"}, React.createElement("a", {className: "waves-effect waves-teal btn-flat right", title: "Mutasd az eredményt!", onClick: this.finishTest}, "Teszt befejezése"))
+					React.createElement("div", {className: "col m4 s12"}, React.createElement("a", {className: "waves-effect waves-teal btn-flat right", title: "Mutasd az eredményt!", onClick: this.finishTest}, 
+						React.createElement("i", {className: "material-icons left"}, "flag"), "Teszt befejezése"
+					))
 				)
 				;
 
 			return (
-				React.createElement("div", null, 
+				React.createElement("div", {className: "test-view"}, 
 					React.createElement("h3", null, this.props.category.title), 
 					questionHtml, 
 					buttonsHtml
@@ -635,6 +730,9 @@
 				}
 
 				this.forceUpdate();
+				if (this.props.onAnswerChange) {
+					this.props.onAnswerChange();
+				}
 
 				if (ga) { ga('send', 'event', 'test', 'answer-question', this.props.question.group.category.id); }
 			}
@@ -712,7 +810,7 @@
 			}
 		},
 		nextQuestion: function() {
-			this.props.nextQuestionCallback();
+			this.props.nextQuestionCallback(true);
 		},
 		render: function() {
 			var self = this;
@@ -721,8 +819,12 @@
 			var selected = question.selected !== null;
 			var choicesHtml = $.map(question.choices, function(choice, i) {
 				var id = 'question-answer-' + self.props.question.id + '-' + i;
+				var choiceClass = 'choice-option ' + (question.correct == i ? 'choice-right' : 'choice-wrong');
+				if (selected && question.selected === i) {
+					choiceClass += ' choice-selected';
+				}
 				return (
-					React.createElement("p", {key: i, className: question.correct == i ? 'choice-right' : 'choice-wrong'}, 
+					React.createElement("p", {key: i, className: choiceClass}, 
 						React.createElement("input", {type: "radio", checked: question.selected === i, value: i, id: id, readOnly: selected, onChange: self.selectChoice}), 
 						React.createElement("label", {htmlFor: id}, choice)
 					)
@@ -741,7 +843,7 @@
 
 			var showAnswers = (this.props.type == 'result') || (selected && this.props.settings.instantCorrection) || this.state.showAnswers;
 			return (
-				React.createElement("div", {className: 'card ' + (showAnswers ? ' show-answers' : '') + (selected ? ' decided' : ' undecided') + (showAnswers && selected ? (this.props.question.isCorrect() ? ' question-right green lighten-5' : ' question-wrong red lighten-5') : '')}, 
+				React.createElement("div", {className: 'card question-card ' + (showAnswers ? ' show-answers' : '') + (selected ? ' decided' : ' undecided') + (showAnswers && selected ? (this.props.question.isCorrect() ? ' question-right green lighten-5' : ' question-wrong red lighten-5') : '')}, 
 					React.createElement("div", {className: "card-content question-content"}, 
 						imageHtml, 
 						React.createElement("div", {className: "question-main"}, 
