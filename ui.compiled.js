@@ -184,31 +184,18 @@
 		},
 		render: function() {
 			var fullscreenBtn = this.state.fullscreenSupported ? (
-				React.createElement("a", {
-					href: "#",
-					className: "fullscreen-toggle right",
-					onClick: this.toggleFullscreen,
-					title: this.state.isFullscreen ? "Kilépés a teljes képernyőből" : "Teljes képernyő",
-					'aria-label': this.state.isFullscreen ? "Kilépés a teljes képernyőből" : "Teljes képernyő"
-				}, React.createElement("i", {className: "material-icons"}, this.state.isFullscreen ? "fullscreen_exit" : "fullscreen"))
+				React.createElement("a", {href: "#", className: "fullscreen-toggle right", onClick: this.toggleFullscreen, title: this.state.isFullscreen ? "Kilépés a teljes képernyőből" : "Teljes képernyő", 'aria-label': this.state.isFullscreen ? "Kilépés a teljes képernyőből" : "Teljes képernyő"}, React.createElement("i", {className: "material-icons"}, this.state.isFullscreen ? "fullscreen_exit" : "fullscreen"))
 			) : null;
-
 			var sideFullscreen = this.state.fullscreenSupported ? (
-				React.createElement("li", {className: "fullscreen-side-item"}, 
-					React.createElement("a", {href: "#", onClick: this.toggleFullscreen}, 
-						React.createElement("i", {className: "material-icons"}, this.state.isFullscreen ? "fullscreen_exit" : "fullscreen"), 
-						this.state.isFullscreen ? "Kilépés a teljes képernyőből" : "Teljes képernyő"
-					)
-				)
+				React.createElement("li", {className: "fullscreen-side-item"}, React.createElement("a", {href: "#", onClick: this.toggleFullscreen}, React.createElement("i", {className: "material-icons"}, this.state.isFullscreen ? "fullscreen_exit" : "fullscreen"), this.state.isFullscreen ? "Kilépés a teljes képernyőből" : "Teljes képernyő"))
 			) : null;
-
 			return (
-				React.createElement("div", {className: "app-root" + (this.state.isFullscreen ? " is-fullscreen" : "")}, 
+				React.createElement("div", {className: "app-root" + (this.state.isFullscreen ? " is-fullscreen" : "")},
 					React.createElement("nav", {className: "teal lighten-1 app-nav", role: "navigation"}, 
 						React.createElement("div", {className: "nav-wrapper container"}, 
 							React.createElement("a", {href: "#", 'data-activates': "nav-mobile", className: "button-collapse"}, React.createElement("i", {className: "material-icons"}, "menu")), 
 							React.createElement("a", {id: "logo-container", href: "#", className: "brand-logo"}, "KRESZ teszt"), 
-							fullscreenBtn, 
+							fullscreenBtn,
 							React.createElement("ul", {className: "right hide-on-med-and-down"}, 
 								React.createElement("li", null, React.createElement("a", {href: "#"}, React.createElement("i", {className: "material-icons left"}, "assignment"), "Új teszt")), 
 								React.createElement("li", null, React.createElement("a", {href: "#info"}, React.createElement("i", {className: "material-icons left"}, "info"), "Infó")), 
@@ -620,6 +607,14 @@
 				startTime: new Date()
 			};
 		},
+		componentDidMount: function() {
+			$.each(this.props.test.questions, function(i, question) {
+				$.each(question.assets || [], function(j, asset) {
+					var image = new Image();
+					image.src = 'data/asset/' + asset;
+				});
+			});
+		},
 		onAnswerChange: function() {
 			this.forceUpdate();
 		},
@@ -646,7 +641,7 @@
 			var hasAnswer = question && question.selected !== null;
 
 			var questionHtml = !this.props.settings.onepage ?
-				(React.createElement(Question, {question: question, settings: this.props.settings, nextQuestionCallback: this.nextQuestion, onAnswerChange: this.onAnswerChange, type: "test"})) :
+				(React.createElement(Question, {question: question, settings: this.props.settings, nextQuestionCallback: this.nextQuestion, onAnswerChange: this.onAnswerChange, type: "test", key: question && question.id})) :
 				$.map(this.props.test.questions, function(question) {
 					return React.createElement(Question, {question: question, settings: self.props.settings, nextQuestionCallback: $.noop, type: "test", key: question.id})
 				});

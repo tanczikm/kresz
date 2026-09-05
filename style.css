@@ -904,7 +904,27 @@ html[data-theme="dark"] h6 {
 	}
 
 	nav.app-nav {
+		box-sizing: content-box;
+		height: 56px;
 		padding-top: env(safe-area-inset-top, 0px);
+	}
+
+	.app-root.is-fullscreen nav.app-nav {
+		box-sizing: border-box;
+		height: calc(56px + env(safe-area-inset-top, 0px));
+		padding-top: env(safe-area-inset-top, 0px);
+	}
+
+	nav .button-collapse {
+		margin-left: 8px;
+	}
+
+	nav .fullscreen-toggle {
+		height: 56px;
+	}
+
+	nav .fullscreen-toggle {
+		margin-right: 8px;
 	}
 
 	.btn, .btn-large {
