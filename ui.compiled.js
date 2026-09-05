@@ -183,6 +183,11 @@
 	}
 
 	var WelcomePage = React.createClass({displayName: 'WelcomePage',
+		getInitialState: function() {
+			return {
+				themePref: theme.getPreference()
+			};
+		},
 		componentDidMount: function() {
 			var self = this;
 			// This is a temporary hack
@@ -192,6 +197,11 @@
 					self.forceUpdate();
 				}, 2000);
 			}
+		},
+		onThemeChange: function(event) {
+			var pref = event.target.value;
+			theme.setPreference(pref);
+			this.setState({themePref: pref});
 		},
 		render: function () {
 			var self = this;
@@ -208,6 +218,28 @@
 				);
 			});
 
+			var themeOptions = [
+				{value: 'system', label: 'Rendszertéma'},
+				{value: 'light', label: 'Világos'},
+				{value: 'dark', label: 'Sötét'}
+			];
+			var themeRadios = themeOptions.map(function(option) {
+				var id = 'theme-radio-' + option.value;
+				return (
+					React.createElement("p", {className: "radio-inline", key: option.value}, 
+						React.createElement("input", {
+							type: "radio",
+							name: "theme",
+							value: option.value,
+							id: id,
+							checked: self.state.themePref === option.value,
+							onChange: self.onThemeChange
+						}), 
+						React.createElement("label", {htmlFor: id}, option.label)
+					)
+				);
+			});
+
 			return (
 				React.createElement("div", null, 
 					React.createElement("div", {className: "card"}, 
@@ -221,6 +253,13 @@
 								React.createElement("br", null), React.createElement("br", null), 
 								React.createElement("strong", null, "A program sütikben menti el a statisztikákat, a sütik törlésével a statisztikák törölhetők."),
 							)
+						)
+					), 
+
+					React.createElement("div", {className: "card"}, 
+						React.createElement("div", {className: "card-content"}, 
+							React.createElement("span", {className: "card-title grey-text text-darken-4"}, "Téma"), 
+							React.createElement("div", {className: "radio-container theme-selector"}, themeRadios)
 						)
 					), 
 
