@@ -887,6 +887,13 @@
 				data: []
 			};
 		},
+		resetStatistics: function() {
+			if (!window.confirm("A visszaállítás nem vonható vissza. Törli a sütikben mentett statisztikákat. Biztosan folytatod?")) {
+				return;
+			}
+			model.resetStatistics();
+			this.setState({data: []});
+		},
 		componentDidMount: function() {
 			var self = this;
 
@@ -939,7 +946,13 @@
 
 			return (
 				React.createElement("div", null, 
-					React.createElement("h3", null, "Statisztika"), 
+					React.createElement("div", {className: "statistics-header"},
+						React.createElement("h3", null, "Statisztika"),
+						React.createElement("button", {type: "button", className: "btn red lighten-1", onClick: this.resetStatistics, title: "A mentett statisztikák törlése"},
+							React.createElement("i", {className: "material-icons left"}, "delete"),
+							"Visszaállítás"
+						)
+					),
 					categoriesHtml
 				)
 			);

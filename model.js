@@ -149,6 +149,10 @@ var model = (function() {
 	function saveHistory() {
 		window.localStorage.setItem('questionHistory', JSON.stringify(history));
 	}
+	function resetHistory() {
+		history = {};
+		window.localStorage.removeItem('questionHistory');
+	}
 	function addQuestionToHistory(question) {
 		var entry = {
 			id: question.id,
@@ -359,6 +363,9 @@ var model = (function() {
 					return a.category.id - b.category.id;
 				});
 			});
+		},
+		resetStatistics: function() {
+			resetHistory();
 		}
 	};
 })();
