@@ -97,6 +97,7 @@ body > ul li {
 
 .question dl {
 	margin: 0;
+	overflow: hidden;
 }
 
 .question dt {
@@ -132,8 +133,14 @@ body > ul li {
 	max-width: min(280px, 100%);
 	float: right;
 	margin: 0 0 12px 16px;
-	border-radius: 4px;
-	border: 1px solid var(--color-border);
+	border: 0;
+	border-radius: 0;
+}
+
+.exercise-image img {
+	max-width: 100%;
+	height: auto;
+	display: block;
 }
 
 @media (max-width: 600px) {
